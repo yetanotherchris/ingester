@@ -12,89 +12,82 @@ Ingest your personal files (Google Drive, Markdown) into ChromaDB, so you can qu
                                    Claude Code ──> chroma-mcp ──┘
 ```
 
-Everything runs locally. Default embedding model is sentence-transformers
-(all-MiniLM-L6-v2) — no API keys needed.
+Everything runs locally. Default embedding model uses OpenRouter
+(`OPENROUTER_API_KEY` required). Set `USE_LOCAL_EMBEDDINGS=1` for offline
+sentence-transformers.
 
 ## Quick Start
 
-### 1. Start ChromaDB
-
 ```bash
+# 1. Start ChromaDB
 docker compose up -d chromadb
-```
 
-### 2. Run Ingestion
-
-Mount source directories with `-v` and pass `--source` to select what to ingest.
-
-**Ingest Obsidian vault:**
-
-```bash
+# 2. Ingest your files (replace the path with your own)
 docker compose --profile ingest run --rm \
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -v /path/to/your/obsidian:/sources/obsidian \
   ingest --source obsidian
 ```
 
-**Ingest Google Drive (after rclone sync):**
+That's it. Your files are now searchable via chroma-mcp (see below).
+
+## Other Sources
+
+Mount any combination of source directories. Pass `--source` to ingest one,
+or omit it to ingest everything mounted.
 
 ```bash
-rclone sync gdrive:/ C:\Users\Chris\GDrive --progress
-
+# Google Drive (after rclone sync)
 docker compose --profile ingest run --rm \
-  -v C:\Users\Chris\GDrive:/sources/gdrive \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -v ~/GDrive:/sources/gdrive \
   ingest --source gdrive
-```
 
-**Ingest GitHub repos:**
-
-```bash
+# GitHub repos
 docker compose --profile ingest run --rm \
-  -v C:\Users\Chris\repos:/sources/repos \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -v ~/repos:/sources/repos \
   ingest --source repos
-```
 
-**Ingest everything at once:**
-
-```bash
+# Everything at once
 docker compose --profile ingest run --rm \
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
-  -v C:\Users\Chris\GDrive:/sources/gdrive \
-  -v C:\Users\Chris\repos:/sources/repos \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -v ~/ObsidianVault:/sources/obsidian \
+  -v ~/GDrive:/sources/gdrive \
+  -v ~/repos:/sources/repos \
   ingest
-```
 
-**Check stats:**
-
-```bash
+# Check stats
 docker compose --profile ingest run --rm ingest --stats
-```
 
-**Wipe and re-ingest:**
-
-```bash
+# Wipe and re-ingest
 docker compose --profile ingest run --rm \
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -v ~/ObsidianVault:/sources/obsidian \
   ingest --reset --source obsidian
 ```
 
-## OpenRouter Embeddings (optional)
+## Embeddings
 
-Pass your API key as an environment variable to switch from local
-sentence-transformers to OpenRouter:
-
-```bash
-docker compose --profile ingest run --rm \
-  -e OPENROUTER_API_KEY=sk-or-... \
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
-  ingest --source obsidian
-```
-
-To use a different model:
+`OPENROUTER_API_KEY` is required by default. Pass it via the environment
+or add it to your compose override. To use a different model:
 
 ```bash
 docker compose --profile ingest run --rm \
   -e OPENROUTER_API_KEY=sk-or-... \
   -e OPENROUTER_MODEL=google/gemini-embedding-001 \
+  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
+  ingest --source obsidian
+```
+
+### Local Embeddings (optional)
+
+Set `USE_LOCAL_EMBEDDINGS=1` to use sentence-transformers (all-MiniLM-L6-v2)
+with no API key:
+
+```bash
+docker compose --profile ingest run --rm \
+  -e USE_LOCAL_EMBEDDINGS=1 \
   -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
   ingest --source obsidian
 ```
