@@ -134,6 +134,44 @@ Claude Code will then have access to:
 - `chroma_get_collection_info` — collection stats
 - `chroma_get_documents` — retrieve by ID or metadata filter
 
+## Advanced: Running without Compose
+
+You can run the GHCR image directly with `docker run`. Mount `/data` for
+ChromaDB storage and `/sources/<name>` for each source.
+
+```bash
+mkdir -p ~/chromadb/data
+
+# Ingest Obsidian vault
+docker run --rm \
+  -v ~/chromadb/data:/data \
+  -v ~/ObsidianVault:/sources/obsidian \
+  ghcr.io/yetanotherchris/ingester:latest --source obsidian
+
+# Ingest Google Drive
+docker run --rm \
+  -v ~/chromadb/data:/data \
+  -v ~/GDrive:/sources/gdrive \
+  ghcr.io/yetanotherchris/ingester:latest --source gdrive
+
+# Ingest GitHub repos
+docker run --rm \
+  -v ~/chromadb/data:/data \
+  -v ~/repos:/sources/repos \
+  ghcr.io/yetanotherchris/ingester:latest --source repos
+
+# Check stats
+docker run --rm \
+  -v ~/chromadb/data:/data \
+  ghcr.io/yetanotherchris/ingester:latest --stats
+
+# Wipe and re-ingest
+docker run --rm \
+  -v ~/chromadb/data:/data \
+  -v ~/ObsidianVault:/sources/obsidian \
+  ghcr.io/yetanotherchris/ingester:latest --reset --source obsidian
+```
+
 ## Notes
 
 - First ingestion is slower — sentence-transformers model downloads inside the container. Subsequent runs use Docker's layer cache.
