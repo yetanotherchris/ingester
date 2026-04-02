@@ -17,95 +17,64 @@ Everything runs locally. Default embedding model is sentence-transformers
 
 ## Quick Start
 
-### 1. Create ChromaDB Data Directory
-
-```powershell
-mkdir C:\chromadb\data
-```
-
-### 2. Build the Ingestion Image
-
-```powershell
-cd C:\path\to\ingest-project
-docker build -t ingest .
-```
-
-First build downloads the sentence-transformers model (~80MB) — subsequent
-runs use the cached image.
-
-### 3. Run Ingestion
-
-Mount `/data` for ChromaDB storage, mount `/sources/<name>` for each source.
-
-**Ingest Obsidian vault:**
-
-```powershell
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian `
-  ingest --source obsidian
-```
-
-**Ingest Google Drive (after rclone sync):**
-
-```powershell
-rclone sync gdrive:/ C:\Users\Chris\GDrive --progress
-
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\GDrive:/sources/gdrive `
-  ingest --source gdrive
-```
-
-**Ingest GitHub repos:**
-
-```powershell
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\repos:/sources/repos `
-  ingest --source repos
-```
-
-**Ingest everything at once:**
-
-```powershell
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian `
-  -v C:\Users\Chris\GDrive:/sources/gdrive `
-  -v C:\Users\Chris\repos:/sources/repos `
-  ingest
-```
-
-**Check stats:**
-
-```powershell
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  ingest --stats
-```
-
-**Wipe and re-ingest:**
-
-```powershell
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian `
-  ingest --reset --source obsidian
-```
-
-## Docker Compose
-
-Start ChromaDB server:
+### 1. Start ChromaDB
 
 ```bash
 docker compose up -d chromadb
 ```
 
-Run ingestion via compose (with source volumes mounted manually or via override):
+### 2. Run Ingestion
+
+Mount source directories with `-v` and pass `--source` to select what to ingest.
+
+**Ingest Obsidian vault:**
 
 ```bash
-docker compose --profile ingest run --rm ingest --source obsidian
+docker compose --profile ingest run --rm \
+  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
+  ingest --source obsidian
+```
+
+**Ingest Google Drive (after rclone sync):**
+
+```bash
+rclone sync gdrive:/ C:\Users\Chris\GDrive --progress
+
+docker compose --profile ingest run --rm \
+  -v C:\Users\Chris\GDrive:/sources/gdrive \
+  ingest --source gdrive
+```
+
+**Ingest GitHub repos:**
+
+```bash
+docker compose --profile ingest run --rm \
+  -v C:\Users\Chris\repos:/sources/repos \
+  ingest --source repos
+```
+
+**Ingest everything at once:**
+
+```bash
+docker compose --profile ingest run --rm \
+  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
+  -v C:\Users\Chris\GDrive:/sources/gdrive \
+  -v C:\Users\Chris\repos:/sources/repos \
+  ingest
+```
+
+**Check stats:**
+
+```bash
+docker compose --profile ingest run --rm ingest --stats
+```
+
+**Wipe and re-ingest:**
+
+```bash
+docker compose --profile ingest run --rm \
+  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
+  ingest --reset --source obsidian
 ```
 
 ## OpenRouter Embeddings (optional)
@@ -113,22 +82,20 @@ docker compose --profile ingest run --rm ingest --source obsidian
 Pass your API key as an environment variable to switch from local
 sentence-transformers to OpenRouter:
 
-```powershell
-docker run --rm `
-  -e OPENROUTER_API_KEY=sk-or-... `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian `
+```bash
+docker compose --profile ingest run --rm \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
   ingest --source obsidian
 ```
 
 To use a different model:
 
-```powershell
-docker run --rm `
-  -e OPENROUTER_API_KEY=sk-or-... `
-  -e OPENROUTER_MODEL=google/gemini-embedding-001 `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian `
+```bash
+docker compose --profile ingest run --rm \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -e OPENROUTER_MODEL=google/gemini-embedding-001 \
+  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
   ingest --source obsidian
 ```
 
