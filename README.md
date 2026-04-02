@@ -7,128 +7,88 @@ Ingest your personal files (Google Drive, Markdown) into ChromaDB, so you can qu
 ```
 [Obsidian .md files]  ──┐
 [rclone'd GDrive]     ──┼──> docker run ingest ──> ChromaDB (persistent, local)
-[GitHub repos]        ──┘                                │
-                                                         │
+[GitHub repos]        ──┘                                       │
+                                                                │
                                    Claude Code ──> chroma-mcp ──┘
 ```
 
-Everything runs locally. Default embedding model is sentence-transformers
-(all-MiniLM-L6-v2) — no API keys needed.
+Everything runs locally. Default embedding model uses OpenRouter
+(`OPENROUTER_API_KEY` required). Set `USE_LOCAL_EMBEDDINGS=1` for offline
+sentence-transformers.
 
 ## Quick Start
 
-### 1. Create ChromaDB Data Directory
+```bash
+# 1. Start ChromaDB
+docker compose up -d chromadb
 
-```powershell
-mkdir C:\chromadb\data
-```
-
-### 2. Build the Ingestion Image
-
-```powershell
-cd C:\path\to\ingest-project
-docker build -t ingest .
-```
-
-First build downloads the sentence-transformers model (~80MB) — subsequent
-runs use the cached image.
-
-### 3. Run Ingestion
-
-Mount `/data` for ChromaDB storage, mount `/sources/<name>` for each source.
-
-**Ingest Obsidian vault:**
-
-```powershell
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian `
+# 2. Ingest your files (replace the path with your own)
+docker compose --profile ingest run --rm \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -v /path/to/your/obsidian:/sources/obsidian \
   ingest --source obsidian
 ```
 
-**Ingest Google Drive (after rclone sync):**
+That's it. Your files are now searchable via chroma-mcp (see below).
 
-```powershell
-rclone sync gdrive:/ C:\Users\Chris\GDrive --progress
+## Other Sources
 
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\GDrive:/sources/gdrive `
+Mount any combination of source directories. Pass `--source` to ingest one,
+or omit it to ingest everything mounted.
+
+```bash
+# Google Drive (after rclone sync)
+docker compose --profile ingest run --rm \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -v ~/GDrive:/sources/gdrive \
   ingest --source gdrive
-```
 
-**Ingest GitHub repos:**
-
-```powershell
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\repos:/sources/repos `
+# GitHub repos
+docker compose --profile ingest run --rm \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -v ~/repos:/sources/repos \
   ingest --source repos
-```
 
-**Ingest everything at once:**
-
-```powershell
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian `
-  -v C:\Users\Chris\GDrive:/sources/gdrive `
-  -v C:\Users\Chris\repos:/sources/repos `
+# Everything at once
+docker compose --profile ingest run --rm \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -v ~/ObsidianVault:/sources/obsidian \
+  -v ~/GDrive:/sources/gdrive \
+  -v ~/repos:/sources/repos \
   ingest
-```
 
-**Check stats:**
+# Check stats
+docker compose --profile ingest run --rm ingest --stats
 
-```powershell
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  ingest --stats
-```
-
-**Wipe and re-ingest:**
-
-```powershell
-docker run --rm `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian `
+# Wipe and re-ingest
+docker compose --profile ingest run --rm \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -v ~/ObsidianVault:/sources/obsidian \
   ingest --reset --source obsidian
 ```
 
-## Docker Compose
+## Embeddings
 
-Start ChromaDB server:
-
-```bash
-docker compose up -d chromadb
-```
-
-Run ingestion via compose (with source volumes mounted manually or via override):
+`OPENROUTER_API_KEY` is required by default. Pass it via the environment
+or add it to your compose override. To use a different model:
 
 ```bash
-docker compose --profile ingest run --rm ingest --source obsidian
-```
-
-## OpenRouter Embeddings (optional)
-
-Pass your API key as an environment variable to switch from local
-sentence-transformers to OpenRouter:
-
-```powershell
-docker run --rm `
-  -e OPENROUTER_API_KEY=sk-or-... `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian `
+docker compose --profile ingest run --rm \
+  -e OPENROUTER_API_KEY=sk-or-... \
+  -e OPENROUTER_MODEL=google/gemini-embedding-001 \
+  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
   ingest --source obsidian
 ```
 
-To use a different model:
+### Local Embeddings (optional)
 
-```powershell
-docker run --rm `
-  -e OPENROUTER_API_KEY=sk-or-... `
-  -e OPENROUTER_MODEL=google/gemini-embedding-001 `
-  -v C:\chromadb\data:/data `
-  -v C:\Users\Chris\ObsidianVault:/sources/obsidian `
+Set `USE_LOCAL_EMBEDDINGS=1` to use sentence-transformers (all-MiniLM-L6-v2)
+with no API key:
+
+```bash
+docker compose --profile ingest run --rm \
+  -e USE_LOCAL_EMBEDDINGS=1 \
+  -v C:\Users\Chris\ObsidianVault:/sources/obsidian \
   ingest --source obsidian
 ```
 
@@ -166,6 +126,44 @@ Claude Code will then have access to:
 - `chroma_list_collections` — list what's indexed
 - `chroma_get_collection_info` — collection stats
 - `chroma_get_documents` — retrieve by ID or metadata filter
+
+## Advanced: Running without Compose
+
+You can run the GHCR image directly with `docker run`. Mount `/data` for
+ChromaDB storage and `/sources/<name>` for each source.
+
+```bash
+mkdir -p ~/chromadb/data
+
+# Ingest Obsidian vault
+docker run --rm \
+  -v ~/chromadb/data:/data \
+  -v ~/ObsidianVault:/sources/obsidian \
+  ghcr.io/yetanotherchris/ingester:latest --source obsidian
+
+# Ingest Google Drive
+docker run --rm \
+  -v ~/chromadb/data:/data \
+  -v ~/GDrive:/sources/gdrive \
+  ghcr.io/yetanotherchris/ingester:latest --source gdrive
+
+# Ingest GitHub repos
+docker run --rm \
+  -v ~/chromadb/data:/data \
+  -v ~/repos:/sources/repos \
+  ghcr.io/yetanotherchris/ingester:latest --source repos
+
+# Check stats
+docker run --rm \
+  -v ~/chromadb/data:/data \
+  ghcr.io/yetanotherchris/ingester:latest --stats
+
+# Wipe and re-ingest
+docker run --rm \
+  -v ~/chromadb/data:/data \
+  -v ~/ObsidianVault:/sources/obsidian \
+  ghcr.io/yetanotherchris/ingester:latest --reset --source obsidian
+```
 
 ## Notes
 

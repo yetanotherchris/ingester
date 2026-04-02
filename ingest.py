@@ -4,8 +4,8 @@ ChromaDB Vault Ingestion Script (Docker CLI)
 Ingests markdown, PDF, and DOCX files into ChromaDB for semantic search
 via the chroma-mcp server.
 
-Default: uses sentence-transformers locally (no API keys needed).
-Optional: set OPENROUTER_API_KEY env var for better embeddings.
+Default: uses OpenRouter for embeddings (requires OPENROUTER_API_KEY).
+Optional: set USE_LOCAL_EMBEDDINGS=1 for offline sentence-transformers.
 
 Usage (Docker):
     docker run -v C:\chromadb\data:/data -v C:\obsidian:/sources/obsidian ingest --source obsidian
@@ -20,8 +20,9 @@ Mount points:
     /sources/repos     -> GitHub repos
 
 Environment variables:
-    OPENROUTER_API_KEY -> (optional) use OpenRouter for embeddings
-    OPENROUTER_MODEL   -> (optional) embedding model, default: openai/text-embedding-3-small
+    OPENROUTER_API_KEY   -> API key for OpenRouter embeddings (required unless local)
+    OPENROUTER_MODEL     -> (optional) embedding model, default: openai/text-embedding-3-small
+    USE_LOCAL_EMBEDDINGS -> set to 1 to use local sentence-transformers instead
 """
 
 import argparse
@@ -60,20 +61,26 @@ CHUNK_OVERLAP = 200
 # ---------------------------------------------------------------------------
 
 def get_embedding_function():
-    """Use OpenRouter if key is set, otherwise default sentence-transformers."""
-    api_key = os.environ.get("OPENROUTER_API_KEY")
-    if api_key:
-        from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
-        model = os.environ.get("OPENROUTER_MODEL", "openai/text-embedding-3-small")
-        print(f"Using OpenRouter embeddings: {model}")
-        return OpenAIEmbeddingFunction(
-            api_key=api_key,
-            api_base="https://openrouter.ai/api/v1",
-            model_name=model,
-        )
-    else:
-        print("Using default local embeddings (all-MiniLM-L6-v2)")
+    """Use OpenRouter by default, or local sentence-transformers if USE_LOCAL_EMBEDDINGS is set."""
+    if os.environ.get("USE_LOCAL_EMBEDDINGS"):
+        print("Using local embeddings (all-MiniLM-L6-v2)")
         return None  # ChromaDB default
+
+    api_key = os.environ.get("OPENROUTER_API_KEY")
+    if not api_key:
+        raise SystemExit(
+            "Error: OPENROUTER_API_KEY is required. "
+            "Set USE_LOCAL_EMBEDDINGS=1 to use local sentence-transformers instead."
+        )
+
+    from chromadb.utils.embedding_functions import OpenAIEmbeddingFunction
+    model = os.environ.get("OPENROUTER_MODEL", "openai/text-embedding-3-small")
+    print(f"Using OpenRouter embeddings: {model}")
+    return OpenAIEmbeddingFunction(
+        api_key=api_key,
+        api_base="https://openrouter.ai/api/v1",
+        model_name=model,
+    )
 
 
 # ---------------------------------------------------------------------------
