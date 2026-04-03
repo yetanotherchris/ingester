@@ -1,43 +1,46 @@
 param(
     [Parameter(Mandatory = $true)]
-    [string]$Version
+    [string]$Version,
+
+    [Parameter(Mandatory = $false)]
+    [string]$Token,
+
+    [switch]$Submit
 )
 
-$repo = "yetanotherchris/zolam"
-$wingetDir = "$PSScriptRoot/winget"
-$manifestFiles = @(
-    "yetanotherchris.zolam.yaml",
-    "yetanotherchris.zolam.installer.yaml",
-    "yetanotherchris.zolam.locale.en-US.yaml"
-)
+$packageId = "yetanotherchris.zolam"
+$url = "https://github.com/yetanotherchris/zolam/releases/download/v$Version/zolam-windows-amd64.exe"
 
-$url = "https://github.com/$repo/releases/download/v$Version/zolam-windows-amd64.exe"
-$tempFile = Join-Path ([System.IO.Path]::GetTempPath()) "zolam-windows-amd64.exe"
-
-Write-Host "Downloading $url ..."
-Invoke-WebRequest -Uri $url -OutFile $tempFile
-
-$hash = (Get-FileHash -Path $tempFile -Algorithm SHA256).Hash.ToUpper()
-Write-Host "SHA256 for windows-amd64: $hash"
-
-Remove-Item $tempFile
-
-$releaseDate = (Get-Date).ToString("yyyy-MM-dd")
-
-foreach ($file in $manifestFiles) {
-    $path = Join-Path $wingetDir $file
-    $content = Get-Content -Path $path -Raw
-    $content = $content -replace '__VERSION__', $Version
-    $content = $content -replace '__SHA256__', $hash
-    $content = $content -replace '__RELEASEDATE__', $releaseDate
-
-    Set-Content -Path $path -Value $content -NoNewline
-    Write-Host "Updated $path with version $Version"
+# Check wingetcreate is installed
+if (-not (Get-Command wingetcreate -ErrorAction SilentlyContinue)) {
+    Write-Error "wingetcreate not found. Install with: winget install wingetcreate"
+    exit 1
 }
 
-Write-Host ""
-Write-Host "Winget manifests updated. To submit to winget-pkgs:"
-Write-Host "  1. Fork https://github.com/microsoft/winget-pkgs"
-Write-Host "  2. Copy winget/*.yaml to manifests/y/yetanotherchris/zolam/$Version/"
-Write-Host "  3. Validate with: winget validate manifests/y/yetanotherchris/zolam/$Version/"
-Write-Host "  4. Submit a pull request"
+$args = @("update", $packageId, "-v", $Version, "-u", $url)
+
+if ($Submit) {
+    if (-not $Token) {
+        Write-Error "A GitHub personal access token is required when using -Submit. Pass it with -Token."
+        exit 1
+    }
+    $args += @("--submit", "--token", $Token)
+    Write-Host "Updating and submitting $packageId v$Version to winget-pkgs..."
+} else {
+    $outputDir = "$PSScriptRoot/winget-output"
+    $args += @("-o", $outputDir)
+    Write-Host "Updating $packageId v$Version (output to $outputDir)..."
+}
+
+& wingetcreate @args
+
+if ($LASTEXITCODE -eq 0) {
+    Write-Host "Done."
+    if (-not $Submit) {
+        Write-Host ""
+        Write-Host "To submit, re-run with -Submit -Token <github-pat>"
+    }
+} else {
+    Write-Error "wingetcreate failed with exit code $LASTEXITCODE"
+    exit $LASTEXITCODE
+}
