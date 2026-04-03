@@ -1,6 +1,6 @@
 # zolam
 
-Ingest your personal files into ChromaDB for semantic search in Claude.
+Ingest your personal files (PDF, Markdown, Docx, Txt) into ChromaDB for semantic search in Claude.
 
 ## Installation
 
@@ -16,7 +16,7 @@ brew install yetanotherchris/tap/zolam
 winget install yetanotherchris.zolam
 ```
 
-### Scoop (Windows)
+If you don't have Winget, you can also use [scoop](https://www.scoop.sh):
 
 ```powershell
 scoop bucket add zolam https://github.com/yetanotherchris/zolam
@@ -30,23 +30,7 @@ scoop install zolam
 - Docker and Docker Compose
 - An `OPENROUTER_API_KEY` (for embeddings), or set `USE_LOCAL_EMBEDDINGS=1` for offline embeddings
 
-Add your API key to a `.env` file:
-
-```bash
-# .env
-OPENROUTER_API_KEY=sk-or-...
-```
-
-### Claude Code Integration (chroma-mcp)
-
-Once setup is complete, you can install the MCP server to give Claude access to your ingested files:
-
-```bash
-pip install uv
-claude mcp add chroma -- uvx chroma-mcp --client-type persistent --data-dir /path/to/chromadb/data
-```
-
-This gives Claude access to `chroma_query_documents`, `chroma_list_collections`, and other Chroma tools for semantic search.
+Once you have run zolam and ingested files, you can enable its database, ChromaDb, inside Claude (see below).
 
 ## Usage
 
@@ -110,7 +94,7 @@ The `download` command uses `rclone copy` via a Docker container to sync files f
 
 ### Configuration
 
-All directories are ingested into a single collection. Configure via environment variables or a `.env` file:
+All directories are ingested into a single collection. Configure via environment variables:
 
 | Variable | Default | Description |
 |---|---|---|
@@ -124,6 +108,17 @@ All directories are ingested into a single collection. Configure via environment
 
 Environment variables can also be passed as CLI flags (flags take precedence).
 
+## Claude Code Integration (chroma-mcp)
+
+Once setup is complete, you can install the MCP server to give Claude access to your ingested files:
+
+```bash
+pip install uv
+claude mcp add chroma -- uvx chroma-mcp --client-type persistent --data-dir /path/to/chromadb/data
+```
+
+This gives Claude access to `chroma_query_documents`, `chroma_list_collections`, and other Chroma tools for semantic search.
+
 ### Binary Download
 
 *Download the latest binary from [GitHub Releases](https://github.com/yetanotherchris/zolam/releases) for your platform.*
@@ -134,3 +129,6 @@ Environment variables can also be passed as CLI flags (flags take precedence).
 cd src
 go build -o zolam ./cmd/zolam/
 ```
+
+### Name
+The name zolam comes from Midazolam, a sedative most people take for an endoscopy or other procedures. It induces sleepiness, decreases anxiety, and causes anterograde amnesia.
