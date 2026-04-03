@@ -7,6 +7,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strings"
 "github.com/yetanotherchris/zolam/internal/docker"
 	"github.com/yetanotherchris/zolam/internal/domain"
 )
@@ -44,22 +45,46 @@ func NewIngester(dc *docker.DockerClient, cfg *domain.Config) *Ingester {
 
 // runAndStream executes the command and streams its combined stdout/stderr
 // output line-by-line to outputFn.
-func runAndStream(cmd interface{ StdoutPipe() (io.ReadCloser, error); Start() error; Wait() error }, outputFn func(string)) error {
+type streamableCmd interface {
+	StdoutPipe() (io.ReadCloser, error)
+	StderrPipe() (io.ReadCloser, error)
+	Start() error
+	Wait() error
+}
+
+func runAndStream(cmd streamableCmd, outputFn func(string)) error {
 	stdout, err := cmd.StdoutPipe()
 	if err != nil {
 		return fmt.Errorf("creating stdout pipe: %w", err)
+	}
+
+	stderr, err := cmd.StderrPipe()
+	if err != nil {
+		return fmt.Errorf("creating stderr pipe: %w", err)
 	}
 
 	if err := cmd.Start(); err != nil {
 		return fmt.Errorf("starting command: %w", err)
 	}
 
-	scanner := bufio.NewScanner(stdout)
+	// Read both stdout and stderr
+	combined := io.MultiReader(stdout, stderr)
+	scanner := bufio.NewScanner(combined)
+	var lastLines []string
 	for scanner.Scan() {
-		outputFn(scanner.Text())
+		line := scanner.Text()
+		outputFn(line)
+		lastLines = append(lastLines, line)
+		if len(lastLines) > 20 {
+			lastLines = lastLines[1:]
+		}
 	}
 
 	if err := cmd.Wait(); err != nil {
+		detail := strings.Join(lastLines, "\n")
+		if detail != "" {
+			return fmt.Errorf("command failed: %w\nOutput:\n%s", err, detail)
+		}
 		return fmt.Errorf("command failed: %w", err)
 	}
 
@@ -115,7 +140,6 @@ func (i *Ingester) Run(directories []string, opts IngestOptions, outputFn func(s
 		return fmt.Errorf("creating ingest command: %w", err)
 	}
 
-	cmd.Stderr = cmd.Stdout // merge stderr into stdout pipe
 	return runAndStream(cmd, outputFn)
 }
 

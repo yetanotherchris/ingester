@@ -219,11 +219,15 @@ func (m AppModel) runIngest(directories []string, extensions string) tea.Cmd {
 			CollectionName: m.config.CollectionName,
 		}
 
-		err := m.ingester.Run(directories, opts, func(line string) {})
+		var lines []string
+		err := m.ingester.Run(directories, opts, func(line string) {
+			lines = append(lines, line)
+		})
+		output := strings.Join(lines, "\n")
 		if err != nil {
-			return OperationDoneMsg{Err: err}
+			return OperationDoneMsg{Err: err, Output: output}
 		}
-		return OperationDoneMsg{}
+		return OperationDoneMsg{Output: output}
 	}
 }
 
