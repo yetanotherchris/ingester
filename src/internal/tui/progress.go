@@ -14,7 +14,8 @@ type OutputLineMsg struct {
 
 // OperationDoneMsg signals that the running operation has completed.
 type OperationDoneMsg struct {
-	Err error
+	Err    error
+	Output string
 }
 
 // ProgressModel displays streaming output from a long-running operation.
@@ -55,6 +56,14 @@ func (m ProgressModel) Update(msg tea.Msg) (ProgressModel, tea.Cmd) {
 	case OperationDoneMsg:
 		m.done = true
 		m.err = msg.Err
+		if msg.Output != "" {
+			if m.content != "" {
+				m.content += "\n"
+			}
+			m.content += msg.Output
+			m.viewport.SetContent(m.content)
+			m.viewport.GotoBottom()
+		}
 		if msg.Err != nil {
 			if m.content != "" {
 				m.content += "\n"

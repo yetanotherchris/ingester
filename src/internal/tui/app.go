@@ -205,6 +205,10 @@ func (m AppModel) settingsView() string {
 
 func (m AppModel) runIngest(directories []string, extensions string) tea.Cmd {
 	return func() tea.Msg {
+		if err := m.checkChromaDB(); err != nil {
+			return OperationDoneMsg{Err: err}
+		}
+
 		exts := strings.Split(extensions, ",")
 		for i := range exts {
 			exts[i] = strings.TrimSpace(exts[i])
@@ -215,11 +219,7 @@ func (m AppModel) runIngest(directories []string, extensions string) tea.Cmd {
 			CollectionName: m.config.CollectionName,
 		}
 
-		err := m.ingester.Run(directories, opts, func(line string) {
-			// Note: in a real streaming scenario we would use p.Send(),
-			// but for simplicity the outputFn collects output.
-		})
-
+		err := m.ingester.Run(directories, opts, func(line string) {})
 		if err != nil {
 			return OperationDoneMsg{Err: err}
 		}
@@ -229,6 +229,10 @@ func (m AppModel) runIngest(directories []string, extensions string) tea.Cmd {
 
 func (m AppModel) runUpdateOnly() tea.Cmd {
 	return func() tea.Msg {
+		if err := m.checkChromaDB(); err != nil {
+			return OperationDoneMsg{Err: err}
+		}
+
 		dirs := m.config.Directories
 		if len(dirs) == 0 {
 			return OperationDoneMsg{Err: fmt.Errorf("no directories configured")}
@@ -239,7 +243,7 @@ func (m AppModel) runUpdateOnly() tea.Cmd {
 			return OperationDoneMsg{Err: err}
 		}
 
-		return OperationDoneMsg{Err: fmt.Errorf("update complete: %d added, %d changed, %d removed, %d unchanged",
+		return OperationDoneMsg{Output: fmt.Sprintf("Update complete: %d added, %d changed, %d removed, %d unchanged",
 			result.Added, result.Changed, result.Removed, result.Unchanged)}
 	}
 }
@@ -260,23 +264,37 @@ func (m AppModel) runRclone() tea.Cmd {
 	}
 }
 
+func (m AppModel) checkChromaDB() error {
+	running, _ := m.dockerClient.ChromaDBStatus()
+	if !running {
+		return fmt.Errorf("ChromaDB is not running. Use 'Start ChromaDB' from the menu first")
+	}
+	return nil
+}
+
 func (m AppModel) runStats() tea.Cmd {
 	return func() tea.Msg {
-		opts := ingester.IngestOptions{
-			CollectionName: m.config.CollectionName,
-			Stats:          true,
+		if err := m.checkChromaDB(); err != nil {
+			return OperationDoneMsg{Err: err}
 		}
 
-		err := m.ingester.Run(nil, opts, func(line string) {})
+		stats, err := m.ingester.GetStats(func(line string) {})
 		if err != nil {
 			return OperationDoneMsg{Err: err}
 		}
-		return OperationDoneMsg{}
+
+		summary := fmt.Sprintf("Collection: %s\nChromaDB:   running\nEmbeddings: %s",
+			stats.CollectionName, stats.EmbeddingType)
+		return OperationDoneMsg{Output: summary}
 	}
 }
 
 func (m AppModel) runReset() tea.Cmd {
 	return func() tea.Msg {
+		if err := m.checkChromaDB(); err != nil {
+			return OperationDoneMsg{Err: err}
+		}
+
 		opts := ingester.IngestOptions{
 			CollectionName: m.config.CollectionName,
 			Reset:          true,
