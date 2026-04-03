@@ -8,10 +8,10 @@ Default: uses OpenRouter for embeddings (requires OPENROUTER_API_KEY).
 Optional: set USE_LOCAL_EMBEDDINGS=1 for offline sentence-transformers.
 
 Usage (Docker):
-    docker run -v C:\chromadb\data:/data -v C:\obsidian:/sources/obsidian ingest --source obsidian
-    docker run -v C:\chromadb\data:/data -v C:\gdrive:/sources/gdrive ingest --source gdrive
-    docker run -v C:\chromadb\data:/data -v ... ingest --reset
-    docker run -v C:\chromadb\data:/data ingest --stats
+    docker run -v /chromadb/data:/data -v /obsidian:/sources/obsidian ingest --source obsidian
+    docker run -v /chromadb/data:/data -v /gdrive:/sources/gdrive ingest --source gdrive
+    docker run -v /chromadb/data:/data -v ... ingest --reset
+    docker run -v /chromadb/data:/data ingest --stats
 
 Mount points:
     /data              -> ChromaDB persistent storage
