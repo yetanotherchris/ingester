@@ -9,7 +9,7 @@ func TestLoadConfig_Defaults(t *testing.T) {
 	for _, key := range []string{
 		"OPENROUTER_API_KEY", "OPENROUTER_MODEL", "COLLECTION_NAME",
 		"USE_LOCAL_EMBEDDINGS", "RCLONE_REMOTE", "RCLONE_SOURCE",
-		"INGESTER_DATA_DIR",
+		"ZOLAM_DATA_DIR",
 	} {
 		t.Setenv(key, "")
 	}
@@ -57,7 +57,7 @@ func TestLoadConfig_EnvVars(t *testing.T) {
 	t.Setenv("OPENROUTER_MODEL", "")
 	t.Setenv("RCLONE_REMOTE", "")
 	t.Setenv("RCLONE_SOURCE", "")
-	t.Setenv("INGESTER_DATA_DIR", "")
+	t.Setenv("ZOLAM_DATA_DIR", "")
 
 	cfg, _, err := LoadConfig()
 	if err != nil {
@@ -81,7 +81,7 @@ func TestValidate_MissingAPIKey(t *testing.T) {
 	t.Setenv("OPENROUTER_MODEL", "some-model")
 	t.Setenv("COLLECTION_NAME", "some-collection")
 	t.Setenv("RCLONE_REMOTE", "some-remote")
-	t.Setenv("INGESTER_DATA_DIR", "some-dir")
+	t.Setenv("ZOLAM_DATA_DIR", "some-dir")
 
 	cfg := &Config{
 		UseLocalEmbeddings: false,
@@ -99,7 +99,7 @@ func TestValidate_LocalEmbeddings(t *testing.T) {
 	t.Setenv("OPENROUTER_MODEL", "some-model")
 	t.Setenv("COLLECTION_NAME", "some-collection")
 	t.Setenv("RCLONE_REMOTE", "some-remote")
-	t.Setenv("INGESTER_DATA_DIR", "some-dir")
+	t.Setenv("ZOLAM_DATA_DIR", "some-dir")
 
 	cfg := &Config{
 		UseLocalEmbeddings: true,

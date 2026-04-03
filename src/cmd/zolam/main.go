@@ -7,17 +7,17 @@ import (
 
 	"github.com/spf13/cobra"
 	tea "github.com/charmbracelet/bubbletea"
-	"github.com/yetanotherchris/ingester/internal/docker"
-	"github.com/yetanotherchris/ingester/internal/domain"
-	"github.com/yetanotherchris/ingester/internal/ingester"
-	"github.com/yetanotherchris/ingester/internal/tui"
+	"github.com/yetanotherchris/zolam/internal/docker"
+	"github.com/yetanotherchris/zolam/internal/domain"
+	"github.com/yetanotherchris/zolam/internal/zolam"
+	"github.com/yetanotherchris/zolam/internal/tui"
 )
 
 var version = "dev"
 
 func main() {
 	rootCmd := &cobra.Command{
-		Use:     "ingester",
+		Use:     "zolam",
 		Short:   "Semantic search file ingester for ChromaDB",
 		Long:    "A TUI and CLI tool for ingesting files into ChromaDB for semantic search via Claude.",
 		Version: version,
@@ -45,10 +45,10 @@ func requireChromaDB(dc *docker.DockerClient) error {
 		return nil
 	}
 
-	return fmt.Errorf("ChromaDB is not running. Start it first with: ingester chromadb start")
+	return fmt.Errorf("ChromaDB is not running. Start it first with: zolam chromadb start")
 }
 
-func initServices() (*domain.Config, *docker.DockerClient, *ingester.Ingester, []string, error) {
+func initServices() (*domain.Config, *docker.DockerClient, *zolam.Ingester, []string, error) {
 	cfg, warnings, err := domain.LoadConfig()
 	if err != nil {
 		return nil, nil, nil, nil, fmt.Errorf("loading config: %w", err)
@@ -59,7 +59,7 @@ func initServices() (*domain.Config, *docker.DockerClient, *ingester.Ingester, [
 		return nil, nil, nil, nil, fmt.Errorf("initializing docker: %w", err)
 	}
 
-	ing := ingester.NewIngester(dc, cfg)
+	ing := zolam.NewIngester(dc, cfg)
 	return cfg, dc, ing, warnings, nil
 }
 
@@ -95,7 +95,7 @@ func newIngestCmd() *cobra.Command {
 				cfg.CollectionName = collection
 			}
 
-			opts := ingester.IngestOptions{
+			opts := zolam.IngestOptions{
 				CollectionName: cfg.CollectionName,
 				Reset:          reset,
 			}
@@ -258,7 +258,7 @@ func newResetCmd() *cobra.Command {
 				return err
 			}
 
-			return ing.Run(nil, ingester.IngestOptions{
+			return ing.Run(nil, zolam.IngestOptions{
 				CollectionName: cfg.CollectionName,
 				Reset:          true,
 				Stats:          true,

@@ -46,12 +46,12 @@ func NewDockerClient() (*DockerClient, error) {
 		return nil, fmt.Errorf("failed to get home directory: %w", err)
 	}
 
-	ingesterDir := filepath.Join(homeDir, ".ingester")
-	if err := os.MkdirAll(ingesterDir, 0755); err != nil {
-		return nil, fmt.Errorf("failed to create ~/.ingester directory: %w", err)
+	zolamDir := filepath.Join(homeDir, ".zolam")
+	if err := os.MkdirAll(zolamDir, 0755); err != nil {
+		return nil, fmt.Errorf("failed to create ~/.zolam directory: %w", err)
 	}
 
-	composePath := filepath.Join(ingesterDir, "compose.yml")
+	composePath := filepath.Join(zolamDir, "compose.yml")
 	if _, err := os.Stat(composePath); os.IsNotExist(err) {
 		data, err := composeFS.ReadFile("compose.yml")
 		if err != nil {

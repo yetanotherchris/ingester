@@ -66,7 +66,7 @@ func (m MenuModel) Update(msg tea.Msg) (MenuModel, tea.Cmd) {
 }
 
 func (m MenuModel) View() string {
-	s := TitleStyle.Render("Ingester") + "\n\n"
+	s := TitleStyle.Render("Zolam") + "\n\n"
 
 	for i, item := range m.items {
 		if i == m.cursor {

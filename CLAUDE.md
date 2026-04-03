@@ -2,19 +2,19 @@
 
 ## Project Overview
 
-Ingester is a semantic search tool that ingests personal files (markdown, PDF, DOCX, code) into ChromaDB for semantic search via Claude. It provides both a TUI (interactive) and CLI (scriptable) interface.
+Zolam is a semantic search tool that ingests personal files (markdown, PDF, DOCX, code) into ChromaDB for semantic search via Claude. It provides both a TUI (interactive) and CLI (scriptable) interface.
 
 ## Tech Stack
 
 - **Go TUI/CLI**: Located in `src/`, built with Cobra (CLI), Bubbletea + Lipgloss (TUI)
 - **Python ingester**: `ingest.py` runs inside Docker to process files into ChromaDB
-- **Docker**: ChromaDB and ingester run as Docker containers via Docker Compose
+- **Docker**: ChromaDB and zolam run as Docker containers via Docker Compose
 
 ## Build & Test
 
 ```bash
 cd src
-go build ./cmd/ingester/        # build
+go build ./cmd/zolam/        # build
 go test ./...                    # run all tests
 go vet ./...                     # lint
 ```
@@ -23,11 +23,11 @@ go vet ./...                     # lint
 
 ```
 src/
-├── cmd/ingester/main.go        # Entry point, CLI subcommands
+├── cmd/zolam/main.go        # Entry point, CLI subcommands
 ├── internal/
 │   ├── domain/                 # Config, manifest types
 │   ├── docker/                 # Docker/compose client, ChromaDB, rclone
-│   ├── ingester/               # Ingest pipeline, file hashing, stats
+│   ├── zolam/                  # Ingest pipeline, file hashing, stats
 │   └── tui/                    # Bubbletea TUI (app, menu, ingest, progress, styles)
 ├── go.mod
 └── go.sum

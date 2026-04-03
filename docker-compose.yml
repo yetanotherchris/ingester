@@ -10,7 +10,7 @@ services:
       - ANONYMIZED_TELEMETRY=FALSE
 
   ingest:
-    image: ghcr.io/yetanotherchris/ingester:latest
+    image: ghcr.io/yetanotherchris/zolam:latest
     build:
       context: .
       dockerfile: Dockerfile

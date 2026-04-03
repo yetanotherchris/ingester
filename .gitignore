@@ -208,4 +208,4 @@ __marimo__/
 
 # Docker Compose data directories
 chromadb-data/
-src/ingester
+src/zolam
