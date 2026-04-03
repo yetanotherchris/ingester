@@ -30,6 +30,7 @@ Environment variables:
 import argparse
 import hashlib
 import os
+import re
 from pathlib import Path
 
 import chromadb
@@ -205,7 +206,9 @@ def main():
     parser.add_argument("--stats", action="store_true", help="Show collection stats and exit")
     args = parser.parse_args()
 
-    collection_name = os.environ.get("COLLECTION_NAME", "my notes")
+    collection_name = os.environ.get("COLLECTION_NAME", "my-notes")
+    # Sanitize: replace invalid chars with hyphens, strip leading/trailing hyphens
+    collection_name = re.sub(r'[^a-zA-Z0-9._-]', '-', collection_name).strip('-')
     client = chromadb.PersistentClient(path=CHROMA_DATA_DIR)
     ef = get_embedding_function()
 
