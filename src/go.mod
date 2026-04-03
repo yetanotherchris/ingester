@@ -1,4 +1,4 @@
-module github.com/yetanotherchris/ingester
+module github.com/yetanotherchris/zolam
 
 go 1.24.7
 

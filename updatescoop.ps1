@@ -3,11 +3,11 @@ param(
     [string]$Version
 )
 
-$repo = "yetanotherchris/ingester"
-$manifestPath = "$PSScriptRoot/ingester.json"
+$repo = "yetanotherchris/zolam"
+$manifestPath = "$PSScriptRoot/zolam.json"
 
-$url = "https://github.com/$repo/releases/download/v$Version/ingester-windows-amd64.exe"
-$tempFile = Join-Path ([System.IO.Path]::GetTempPath()) "ingester-windows-amd64.exe"
+$url = "https://github.com/$repo/releases/download/v$Version/zolam-windows-amd64.exe"
+$tempFile = Join-Path ([System.IO.Path]::GetTempPath()) "zolam-windows-amd64.exe"
 
 Write-Host "Downloading $url ..."
 Invoke-WebRequest -Uri $url -OutFile $tempFile

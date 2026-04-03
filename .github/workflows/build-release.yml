@@ -64,21 +64,21 @@ jobs:
           GOOS: ${{ matrix.goos }}
           GOARCH: ${{ matrix.goarch }}
           CGO_ENABLED: "0"
-        run: go build -ldflags="-X main.version=${{ steps.version.outputs.VERSION }} -s -w" -o ingester .
+        run: go build -ldflags="-X main.version=${{ steps.version.outputs.VERSION }} -s -w" -o zolam .
 
       - name: Rename binary (unix)
         if: matrix.goos != 'windows'
-        run: mv src/ingester ingester-${{ matrix.suffix }}
+        run: mv src/zolam zolam-${{ matrix.suffix }}
 
       - name: Rename binary (windows)
         if: matrix.goos == 'windows'
-        run: mv src/ingester ingester-${{ matrix.suffix }}.exe
+        run: mv src/zolam zolam-${{ matrix.suffix }}.exe
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ingester-${{ matrix.suffix }}
-          path: ingester-${{ matrix.suffix }}*
+          name: zolam-${{ matrix.suffix }}
+          path: zolam-${{ matrix.suffix }}*
 
   release:
     needs: build

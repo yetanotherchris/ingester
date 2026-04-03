@@ -82,7 +82,7 @@ func LoadConfig() (*Config, []string, error) {
 		UseLocalEmbeddings: os.Getenv("USE_LOCAL_EMBEDDINGS") == "1",
 		RcloneRemote:       getEnvOrDefault("RCLONE_REMOTE", "gdrive"),
 		RcloneSource:       os.Getenv("RCLONE_SOURCE"),
-		DataDir:            getEnvOrDefault("INGESTER_DATA_DIR", "./chromadb-data"),
+		DataDir:            getEnvOrDefault("ZOLAM_DATA_DIR", "./chromadb-data"),
 		Extensions:         append([]string{}, defaultExtensions...),
 	}
 
@@ -153,8 +153,8 @@ func (c *Config) Validate() (warnings []string, errs []error) {
 	if os.Getenv("RCLONE_REMOTE") == "" {
 		warnings = append(warnings, "RCLONE_REMOTE not set, using default: gdrive")
 	}
-	if os.Getenv("INGESTER_DATA_DIR") == "" {
-		warnings = append(warnings, "INGESTER_DATA_DIR not set, using default: ./chromadb-data")
+	if os.Getenv("ZOLAM_DATA_DIR") == "" {
+		warnings = append(warnings, "ZOLAM_DATA_DIR not set, using default: ./chromadb-data")
 	}
 
 	return warnings, errs

@@ -1,4 +1,4 @@
-package ingester
+package zolam
 
 import (
 	"bufio"
@@ -7,8 +7,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-"github.com/yetanotherchris/ingester/internal/docker"
-	"github.com/yetanotherchris/ingester/internal/domain"
+"github.com/yetanotherchris/zolam/internal/docker"
+	"github.com/yetanotherchris/zolam/internal/domain"
 )
 
 // IngestOptions holds the flags that control an ingest run.
@@ -121,7 +121,7 @@ func (i *Ingester) Run(directories []string, opts IngestOptions, outputFn func(s
 
 // manifestPath returns the path to the hash manifest file.
 func (i *Ingester) manifestPath() string {
-	return filepath.Join(i.config.DataDir, ".ingester-hashes.json")
+	return filepath.Join(i.config.DataDir, ".zolam-hashes.json")
 }
 
 // loadManifest reads the hash manifest from disk. If the file does not exist

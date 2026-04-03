@@ -7,9 +7,9 @@ import (
 
 	tea "github.com/charmbracelet/bubbletea"
 
-	"github.com/yetanotherchris/ingester/internal/docker"
-	"github.com/yetanotherchris/ingester/internal/domain"
-	"github.com/yetanotherchris/ingester/internal/ingester"
+	"github.com/yetanotherchris/zolam/internal/docker"
+	"github.com/yetanotherchris/zolam/internal/domain"
+	"github.com/yetanotherchris/zolam/internal/zolam"
 )
 
 type viewState int
@@ -29,12 +29,12 @@ type AppModel struct {
 	progress     ProgressModel
 	config       *domain.Config
 	dockerClient *docker.DockerClient
-	ingester     *ingester.Ingester
+	ingester     *zolam.Ingester
 	warnings     []string
 }
 
 // NewApp creates a new AppModel with the given dependencies.
-func NewApp(cfg *domain.Config, dc *docker.DockerClient, ing *ingester.Ingester, warnings []string) AppModel {
+func NewApp(cfg *domain.Config, dc *docker.DockerClient, ing *zolam.Ingester, warnings []string) AppModel {
 	return AppModel{
 		state:        menuView,
 		menu:         NewMenuModel(),
@@ -214,7 +214,7 @@ func (m AppModel) runIngest(directories []string, extensions string) tea.Cmd {
 			exts[i] = strings.TrimSpace(exts[i])
 		}
 
-		opts := ingester.IngestOptions{
+		opts := zolam.IngestOptions{
 			Extensions:     exts,
 			CollectionName: m.config.CollectionName,
 		}
@@ -295,7 +295,7 @@ func (m AppModel) runReset() tea.Cmd {
 			return OperationDoneMsg{Err: err}
 		}
 
-		opts := ingester.IngestOptions{
+		opts := zolam.IngestOptions{
 			CollectionName: m.config.CollectionName,
 			Reset:          true,
 		}
