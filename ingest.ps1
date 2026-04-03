@@ -10,7 +10,7 @@
   ./ingest.ps1 -Stats
 #>
 param(
-    [Parameter(ValueFromRemainingArguments = $true)]
+    [Parameter(Position = 0, ValueFromRemainingArguments = $true)]
     [string[]]$Directories,
 
     [string]$Extensions,
