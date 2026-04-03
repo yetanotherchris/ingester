@@ -7,7 +7,7 @@ Ingest your personal files into ChromaDB for semantic search in Claude.
 ### Homebrew (macOS/Linux)
 
 ```bash
-brew install yetanotherchris/tap/ingester
+brew install yetanotherchris/tap/zolam
 ```
 
 ### Winget (Windows)
@@ -19,8 +19,8 @@ winget install yetanotherchris.zolam
 ### Scoop (Windows)
 
 ```powershell
-scoop bucket add ingester https://github.com/yetanotherchris/ingester
-scoop install ingester
+scoop bucket add zolam https://github.com/yetanotherchris/ingester
+scoop install zolam
 ```
 
 ### Binary Download
@@ -31,7 +31,7 @@ Download the latest binary from [GitHub Releases](https://github.com/yetanotherc
 
 ```bash
 cd src
-go build -o ingester ./cmd/ingester/
+go build -o zolam ./cmd/zolam/
 ```
 
 ## Prerequisites
@@ -61,10 +61,10 @@ OPENROUTER_API_KEY=sk-or-...
 
 ### TUI (Interactive Mode)
 
-Run `ingester` with no arguments to launch the interactive TUI:
+Run `zolam` with no arguments to launch the interactive TUI:
 
 ```bash
-ingester
+zolam
 ```
 
 The TUI provides a menu-driven interface for all operations: ingest, update, download, stats, reset, ChromaDB management, and settings.
@@ -75,27 +75,27 @@ All operations are available as CLI subcommands for scripting:
 
 ```bash
 # Ingest directories
-ingester ingest ~/notes ~/docs --extensions .md,.txt --collection my-docs
+zolam ingest ~/notes ~/docs --extensions .md,.txt --collection my-docs
 
 # Update only changed files
-ingester update ~/notes ~/docs
+zolam update ~/notes ~/docs
 
 # Download from Google Drive via rclone
-ingester download --remote gdrive --source Documents/notes --dest ~/notes
+zolam download --remote gdrive --source Documents/notes --dest ~/notes
 
 # Show collection statistics
-ingester stats
+zolam stats
 
 # Reset a collection
-ingester reset --collection my-docs
+zolam reset --collection my-docs
 
 # Manage ChromaDB
-ingester chromadb start
-ingester chromadb stop
-ingester chromadb status
+zolam chromadb start
+zolam chromadb stop
+zolam chromadb status
 
 # Show current configuration
-ingester config
+zolam config
 ```
 
 ### Legacy Scripts
@@ -119,6 +119,6 @@ All directories are ingested into a single collection. Configure via environment
 | `USE_LOCAL_EMBEDDINGS` | | Set to `1` for offline sentence-transformers |
 | `RCLONE_REMOTE` | `gdrive` | rclone remote name |
 | `RCLONE_SOURCE` | | Source path on remote |
-| `INGESTER_DATA_DIR` | `./chromadb-data` | Local ChromaDB data directory |
+| `ZOLAM_DATA_DIR` | `./chromadb-data` | Local ChromaDB data directory |
 
 Environment variables can also be passed as CLI flags (flags take precedence).
