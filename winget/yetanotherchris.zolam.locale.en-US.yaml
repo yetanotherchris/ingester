@@ -6,13 +6,13 @@ Publisher: yetanotherchris
 PackageName: zolam
 PackageUrl: https://github.com/yetanotherchris/ingester
 License: MIT
-ShortDescription: Semantic search file ingester for ChromaDB
-Description: Ingest personal files (markdown, PDF, DOCX, code) into ChromaDB for semantic search via Claude. Provides both a TUI (interactive) and CLI (scriptable) interface.
+ShortDescription: Semantic search tool for ChromaDB
+Description: Zolam ingests personal files (markdown, PDF, DOCX, code) into ChromaDB for semantic search via Claude. Provides both a TUI (interactive) and CLI (scriptable) interface.
 Tags:
   - chromadb
   - semantic-search
   - cli
   - tui
-  - ingester
+  - zolam
 ManifestType: defaultLocale
 ManifestVersion: 1.9.0
