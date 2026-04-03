@@ -39,21 +39,13 @@ func main() {
 	}
 }
 
-func ensureChromaDB(dc *docker.DockerClient) error {
+func requireChromaDB(dc *docker.DockerClient) error {
 	running, _ := dc.ChromaDBStatus()
 	if running {
 		return nil
 	}
 
-	fmt.Println("ChromaDB is not running, running 'chromadb start' first...")
-	if err := dc.StartChromaDB(); err != nil {
-		return fmt.Errorf("failed to start ChromaDB: %w", err)
-	}
-	if err := dc.WaitForChromaDB(30 * time.Second); err != nil {
-		return fmt.Errorf("ChromaDB did not become ready: %w", err)
-	}
-	fmt.Println("ChromaDB is running.")
-	return nil
+	return fmt.Errorf("ChromaDB is not running. Start it first with: ingester chromadb start")
 }
 
 func initServices() (*domain.Config, *docker.DockerClient, *ingester.Ingester, []string, error) {
@@ -113,7 +105,7 @@ func newIngestCmd() *cobra.Command {
 				opts.Extensions = cfg.Extensions
 			}
 
-			if err := ensureChromaDB(dc); err != nil {
+			if err := requireChromaDB(dc); err != nil {
 				return err
 			}
 
@@ -143,7 +135,7 @@ func newUpdateCmd() *cobra.Command {
 			}
 			_ = cfg
 
-			if err := ensureChromaDB(dc); err != nil {
+			if err := requireChromaDB(dc); err != nil {
 				return err
 			}
 
@@ -223,7 +215,7 @@ func newStatsCmd() *cobra.Command {
 				cfg.CollectionName = collection
 			}
 
-			if err := ensureChromaDB(dc); err != nil {
+			if err := requireChromaDB(dc); err != nil {
 				return err
 			}
 
@@ -262,7 +254,7 @@ func newResetCmd() *cobra.Command {
 				cfg.CollectionName = collection
 			}
 
-			if err := ensureChromaDB(dc); err != nil {
+			if err := requireChromaDB(dc); err != nil {
 				return err
 			}
 
