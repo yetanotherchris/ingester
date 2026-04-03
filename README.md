@@ -19,13 +19,13 @@ winget install yetanotherchris.zolam
 ### Scoop (Windows)
 
 ```powershell
-scoop bucket add zolam https://github.com/yetanotherchris/ingester
+scoop bucket add zolam https://github.com/yetanotherchris/zolam
 scoop install zolam
 ```
 
 ### Binary Download
 
-Download the latest binary from [GitHub Releases](https://github.com/yetanotherchris/ingester/releases) for your platform.
+Download the latest binary from [GitHub Releases](https://github.com/yetanotherchris/zolam/releases) for your platform.
 
 ### Build from Source
 

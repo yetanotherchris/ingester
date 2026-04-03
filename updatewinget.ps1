@@ -3,7 +3,7 @@ param(
     [string]$Version
 )
 
-$repo = "yetanotherchris/ingester"
+$repo = "yetanotherchris/zolam"
 $wingetDir = "$PSScriptRoot/winget"
 $manifestFiles = @(
     "yetanotherchris.zolam.yaml",
@@ -11,8 +11,8 @@ $manifestFiles = @(
     "yetanotherchris.zolam.locale.en-US.yaml"
 )
 
-$url = "https://github.com/$repo/releases/download/v$Version/ingester-windows-amd64.exe"
-$tempFile = Join-Path ([System.IO.Path]::GetTempPath()) "ingester-windows-amd64.exe"
+$url = "https://github.com/$repo/releases/download/v$Version/zolam-windows-amd64.exe"
+$tempFile = Join-Path ([System.IO.Path]::GetTempPath()) "zolam-windows-amd64.exe"
 
 Write-Host "Downloading $url ..."
 Invoke-WebRequest -Uri $url -OutFile $tempFile

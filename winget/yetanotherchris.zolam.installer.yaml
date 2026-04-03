@@ -6,7 +6,7 @@ Commands:
   - zolam
 Installers:
   - Architecture: x64
-    InstallerUrl: https://github.com/yetanotherchris/ingester/releases/download/vVERSION/ingester-windows-amd64.exe
+    InstallerUrl: https://github.com/yetanotherchris/zolam/releases/download/vVERSION/zolam-windows-amd64.exe
     InstallerSha256: SHA256
     ReleaseDate: RELEASEDATE
 ManifestType: installer
