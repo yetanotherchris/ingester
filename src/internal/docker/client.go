@@ -114,7 +114,7 @@ func (c *DockerClient) IsContainerRunning(name string) (bool, error) {
 
 	lines := strings.Split(strings.TrimSpace(string(output)), "\n")
 	for _, line := range lines {
-		if strings.TrimSpace(line) == name {
+		if strings.Contains(strings.TrimSpace(line), name) {
 			return true, nil
 		}
 	}

@@ -20,27 +20,32 @@ func (i *Ingester) GetStats(outputFn func(string)) (*Stats, error) {
 		CollectionName: i.config.CollectionName,
 	}
 
-	// Determine embedding type from config.
 	if i.config.UseLocalEmbeddings {
 		stats.EmbeddingType = "Local"
 	} else {
 		stats.EmbeddingType = "OpenRouter"
 	}
 
-	// Check if ChromaDB is running.
-	running, _ := i.docker.ChromaDBStatus()
+	outputFn("Querying Docker for ChromaDB status...")
+	running, err := i.docker.ChromaDBStatus()
+	if err != nil {
+		outputFn(fmt.Sprintf("Error checking ChromaDB status: %v", err))
+	}
 	stats.ChromaDBRunning = running
 
-	// Run the ingest container with --stats to retrieve collection info.
-	cmd, err := i.docker.ComposeRun("ingest", "--stats", "--collection", i.config.CollectionName)
+	outputFn("Running ingest container with --stats...")
+	cmd, err := i.docker.ComposeRun("ingest", "--stats")
 	if err != nil {
 		return stats, fmt.Errorf("creating stats command: %w", err)
 	}
 
 	var buf bytes.Buffer
 	if err := i.docker.StreamOutput(cmd, &buf); err != nil {
-		// Non-fatal: we still return what we know
-		outputFn(fmt.Sprintf("Warning: could not retrieve stats from container: %v", err))
+		outputFn(fmt.Sprintf("Error retrieving stats from container: %v", err))
+		output := strings.TrimSpace(buf.String())
+		if output != "" {
+			outputFn(fmt.Sprintf("Container output: %s", output))
+		}
 		return stats, nil
 	}
 
