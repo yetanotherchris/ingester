@@ -40,6 +40,7 @@ import chromadb
 # ---------------------------------------------------------------------------
 
 CHROMA_DATA_DIR = "/data"
+COLLECTION_NAME = "obsidian"
 
 SOURCES = {
     "obsidian": {
@@ -221,21 +222,21 @@ def main():
 
     if args.stats:
         try:
-            collection = client.get_collection("obsidian")
-            print(f"Collection 'vault' has {collection.count()} documents.")
+            collection = client.get_collection(COLLECTION_NAME)
+            print(f"Collection '{COLLECTION_NAME}' has {collection.count()} documents.")
         except Exception:
-            print("No 'vault' collection found.")
+            print(f"No '{COLLECTION_NAME}' collection found.")
         return
 
     if args.reset:
         try:
-            client.delete_collection("obsidian")
+            client.delete_collection(COLLECTION_NAME)
             print("Deleted existing collection.")
         except Exception:
             pass
 
     ef = get_embedding_function()
-    kwargs = {"name": "obsidian"}
+    kwargs = {"name": COLLECTION_NAME}
     if ef:
         kwargs["embedding_function"] = ef
     collection = client.get_or_create_collection(**kwargs)
