@@ -248,9 +248,5 @@ func (c *Config) RemoveDirectory(index int) {
 // Validate checks the config and returns warnings for missing optional values
 // that fell back to defaults, and errors for invalid or missing required values.
 func (c *Config) Validate() (warnings []string, errs []error) {
-	if c.CollectionName == "my-notes" {
-		warnings = append(warnings, "collectionName not configured, using default: my-notes")
-	}
-
 	return warnings, errs
 }
