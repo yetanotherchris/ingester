@@ -106,7 +106,13 @@ Environment variables can also be passed as CLI flags (flags take precedence).
 
 ## Claude Code Integration (chroma-mcp)
 
-Once setup is complete, you can install the MCP server to give Claude access to your ingested files:
+Once setup is complete, register the MCP server to give Claude access to your ingested files:
+
+```bash
+zolam mcp claude
+```
+
+Or manually:
 
 ```bash
 pip install uv
