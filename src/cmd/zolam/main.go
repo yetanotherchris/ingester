@@ -197,7 +197,7 @@ func newDownloadCmd() *cobra.Command {
 
 	cmd.Flags().StringVar(&source, "source", "", "rclone source (e.g. gdrive:/path/to/folder)")
 	cmd.Flags().StringVar(&dest, "dest", "", "Local destination directory")
-	cmd.Flags().StringVar(&configDir, "config-dir", "", "rclone config directory (default: ~/.rclone)")
+	cmd.Flags().StringVar(&configDir, "config-dir", "", "rclone config directory (default: ~/.config/rclone)")
 
 	return cmd
 }

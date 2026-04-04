@@ -84,9 +84,9 @@ func defaultDataDir() string {
 func defaultRcloneConfigDir() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return ".rclone"
+		return ".config/rclone"
 	}
-	return filepath.ToSlash(filepath.Join(homeDir, ".rclone"))
+	return filepath.ToSlash(filepath.Join(homeDir, ".config", "rclone"))
 }
 
 func LoadConfig() (*Config, []string, error) {

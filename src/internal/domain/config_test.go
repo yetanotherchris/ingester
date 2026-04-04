@@ -37,7 +37,7 @@ func TestLoadConfig_Defaults(t *testing.T) {
 	if envVal := os.Getenv("ZOLAM_DATA_DIR"); envVal != expectedDataDir {
 		t.Errorf("ZOLAM_DATA_DIR env = %q, want %q", envVal, expectedDataDir)
 	}
-	expectedRcloneConfigDir := filepath.ToSlash(filepath.Join(homeDir, ".rclone"))
+	expectedRcloneConfigDir := filepath.ToSlash(filepath.Join(homeDir, ".config", "rclone"))
 	if cfg.RcloneConfigDir != expectedRcloneConfigDir {
 		t.Errorf("RcloneConfigDir = %q, want %q", cfg.RcloneConfigDir, expectedRcloneConfigDir)
 	}
