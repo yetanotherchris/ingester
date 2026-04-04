@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"time"
 
@@ -33,6 +34,7 @@ func main() {
 		newResetCmd(),
 		newChromaDBCmd(),
 		newConfigCmd(),
+		newMcpCmd(),
 	)
 
 	if err := rootCmd.Execute(); err != nil {
@@ -326,6 +328,28 @@ func newChromaDBCmd() *cobra.Command {
 	}
 
 	return cmd
+}
+
+func newMcpCmd() *cobra.Command {
+	return &cobra.Command{
+		Use:   "mcp <provider>",
+		Short: "Register chroma-mcp server with an AI provider",
+		Long:  "Register the chroma-mcp MCP server with an AI provider. Currently supports: claude.",
+		Args:  cobra.ExactArgs(1),
+		RunE: func(cmd *cobra.Command, args []string) error {
+			provider := args[0]
+			switch provider {
+			case "claude":
+				c := exec.Command("claude", "mcp", "add", "--scope", "user", "chroma", "--",
+					"uvx", "chroma-mcp", "--client-type", "http", "--host", "localhost", "--port", "8000", "--ssl", "false")
+				c.Stdout = os.Stdout
+				c.Stderr = os.Stderr
+				return c.Run()
+			default:
+				return fmt.Errorf("unsupported provider %q, supported: claude", provider)
+			}
+		},
+	}
 }
 
 func newConfigCmd() *cobra.Command {
