@@ -150,7 +150,7 @@ func (i *Ingester) Run(directories []string, opts IngestOptions, outputFn func(s
 		base := filepath.Base(absPath)
 		containerDir := "/sources/" + base
 
-		volumeArgs = append(volumeArgs, "-v", absPath+":"+containerDir)
+		volumeArgs = append(volumeArgs, "-v", filepath.ToSlash(absPath)+":"+containerDir)
 		containerDirs = append(containerDirs, containerDir)
 	}
 
@@ -163,8 +163,10 @@ func (i *Ingester) Run(directories []string, opts IngestOptions, outputFn func(s
 	}
 
 	var containerArgs []string
-	containerArgs = append(containerArgs, "--directory")
-	containerArgs = append(containerArgs, containerDirs...)
+	if len(containerDirs) > 0 {
+		containerArgs = append(containerArgs, "--directory")
+		containerArgs = append(containerArgs, containerDirs...)
+	}
 
 	if len(opts.Extensions) > 0 {
 		containerArgs = append(containerArgs, "--extensions")
