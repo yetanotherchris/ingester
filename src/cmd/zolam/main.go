@@ -156,7 +156,6 @@ func newUpdateCmd() *cobra.Command {
 }
 
 func newDownloadCmd() *cobra.Command {
-	var remote string
 	var source string
 	var dest string
 	var configDir string
@@ -171,9 +170,6 @@ func newDownloadCmd() *cobra.Command {
 				return err
 			}
 
-			if remote == "" {
-				remote = cfg.RcloneRemote
-			}
 			if source == "" {
 				source = cfg.RcloneSource
 			}
@@ -187,10 +183,10 @@ func newDownloadCmd() *cobra.Command {
 			}
 
 			if source == "" {
-				return fmt.Errorf("rclone source path is required (--source or RCLONE_SOURCE env var)")
+				return fmt.Errorf("RCLONE_SOURCE is required (--source flag or RCLONE_SOURCE env var)")
 			}
 
-			rcCmd, err := dc.RcloneSync(remote, source, dest, configDir)
+			rcCmd, err := dc.RcloneCopy(source, dest, configDir)
 			if err != nil {
 				return err
 			}
@@ -199,10 +195,9 @@ func newDownloadCmd() *cobra.Command {
 		},
 	}
 
-	cmd.Flags().StringVar(&remote, "remote", "", "rclone remote name (default: gdrive)")
-	cmd.Flags().StringVar(&source, "source", "", "Source path on remote")
+	cmd.Flags().StringVar(&source, "source", "", "rclone source (e.g. gdrive:/path/to/folder)")
 	cmd.Flags().StringVar(&dest, "dest", "", "Local destination directory")
-	cmd.Flags().StringVar(&configDir, "config-dir", "", "rclone config directory (default: ~/.config/rclone)")
+	cmd.Flags().StringVar(&configDir, "config-dir", "", "rclone config directory (default: ~/.rclone)")
 
 	return cmd
 }
@@ -358,7 +353,6 @@ func newConfigCmd() *cobra.Command {
 					fmt.Printf("OpenRouter API Key:  (not set)\n")
 				}
 			}
-			fmt.Printf("rclone Remote:       %s\n", cfg.RcloneRemote)
 			fmt.Printf("rclone Source:       %s\n", cfg.RcloneSource)
 			fmt.Printf("rclone Config Dir:   %s\n", cfg.RcloneConfigDir)
 			fmt.Printf("Extensions:          %v\n", cfg.Extensions)

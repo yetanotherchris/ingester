@@ -13,7 +13,6 @@ type Config struct {
 	OpenRouterModel    string
 	CollectionName     string
 	UseLocalEmbeddings bool
-	RcloneRemote       string
 	RcloneSource       string
 	RcloneConfigDir    string
 	DataDir            string
@@ -85,9 +84,9 @@ func defaultDataDir() string {
 func defaultRcloneConfigDir() string {
 	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		return ".config/rclone"
+		return ".rclone"
 	}
-	return filepath.ToSlash(filepath.Join(homeDir, ".config", "rclone"))
+	return filepath.ToSlash(filepath.Join(homeDir, ".rclone"))
 }
 
 func LoadConfig() (*Config, []string, error) {
@@ -98,7 +97,6 @@ func LoadConfig() (*Config, []string, error) {
 		OpenRouterModel:    getEnvOrDefault("OPENROUTER_MODEL", "openai/text-embedding-3-small"),
 		CollectionName:     getEnvOrDefault("COLLECTION_NAME", "my-notes"),
 		UseLocalEmbeddings: os.Getenv("USE_LOCAL_EMBEDDINGS") == "1",
-		RcloneRemote:       getEnvOrDefault("RCLONE_REMOTE", "gdrive"),
 		RcloneSource:       os.Getenv("RCLONE_SOURCE"),
 		RcloneConfigDir:    getEnvOrDefault("RCLONE_CONFIG_DIR", defaultRcloneConfigDir()),
 		DataDir:            getEnvOrDefault("ZOLAM_DATA_DIR", defaultDataDir()),
@@ -118,8 +116,8 @@ func LoadConfig() (*Config, []string, error) {
 
 // MergeFlags overrides config values with CLI flag values. Only non-empty flag
 // values are applied. Recognised keys: openrouter-api-key, openrouter-model,
-// collection-name, use-local-embeddings, rclone-remote, rclone-source,
-// data-dir, extensions, directories.
+// collection-name, use-local-embeddings, rclone-source,
+// rclone-config-dir, data-dir, extensions, directories.
 func (c *Config) MergeFlags(flags map[string]string) {
 	if v, ok := flags["openrouter-api-key"]; ok && v != "" {
 		c.OpenRouterAPIKey = v
@@ -132,9 +130,6 @@ func (c *Config) MergeFlags(flags map[string]string) {
 	}
 	if v, ok := flags["use-local-embeddings"]; ok && v != "" {
 		c.UseLocalEmbeddings = v == "1" || strings.EqualFold(v, "true")
-	}
-	if v, ok := flags["rclone-remote"]; ok && v != "" {
-		c.RcloneRemote = v
 	}
 	if v, ok := flags["rclone-source"]; ok && v != "" {
 		c.RcloneSource = v
@@ -174,9 +169,6 @@ func (c *Config) Validate() (warnings []string, errs []error) {
 	}
 	if os.Getenv("COLLECTION_NAME") == "" {
 		warnings = append(warnings, "COLLECTION_NAME not set, using default: my-notes")
-	}
-	if os.Getenv("RCLONE_REMOTE") == "" {
-		warnings = append(warnings, "RCLONE_REMOTE not set, using default: gdrive")
 	}
 	if os.Getenv("RCLONE_CONFIG_DIR") == "" {
 		warnings = append(warnings, "RCLONE_CONFIG_DIR not set, using default: "+defaultRcloneConfigDir())

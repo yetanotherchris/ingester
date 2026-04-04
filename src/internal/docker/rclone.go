@@ -5,14 +5,12 @@ import (
 	"os/exec"
 )
 
-func (c *DockerClient) RcloneSync(remote, source, dest, configDir string) (*exec.Cmd, error) {
-	remotePath := fmt.Sprintf("%s:%s", remote, source)
-
+func (c *DockerClient) RcloneCopy(source, dest, configDir string) (*exec.Cmd, error) {
 	cmd := exec.Command("docker", "run", "--rm",
 		"-v", fmt.Sprintf("%s:/data", dest),
 		"-v", fmt.Sprintf("%s:/config/rclone", configDir),
 		"rclone/rclone",
-		"copy", remotePath, "/data", "--progress",
+		"copy", source, "/data", "--progress",
 	)
 
 	return cmd, nil
