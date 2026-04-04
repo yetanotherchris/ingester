@@ -10,7 +10,7 @@ RUN pip install --no-cache-dir \
 
 # Pre-download the default embedding model (all-MiniLM-L6-v2) so it's
 # available at runtime without network access.
-RUN python -c "from chromadb.utils.embedding_functions import DefaultEmbeddingFunction; DefaultEmbeddingFunction()"
+RUN python -c "from chromadb.utils.embedding_functions import DefaultEmbeddingFunction; DefaultEmbeddingFunction()(['warmup'])"
 
 COPY ingest.py .
 
