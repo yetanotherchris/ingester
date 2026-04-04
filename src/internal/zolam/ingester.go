@@ -237,8 +237,9 @@ func (i *Ingester) RunUpdateOnly(directories []string, outputFn func(string)) (*
 		return nil, err
 	}
 
-	// Compute current hashes across all directories.
+	// Compute current hashes across all directories, tracking per-directory extensions.
 	newManifest := make(map[string]string)
+	dirExtensions := make(map[string][]string) // absPath -> extensions used
 	for _, dir := range directories {
 		absPath, err := filepath.Abs(dir)
 		if err != nil {
@@ -253,6 +254,7 @@ func (i *Ingester) RunUpdateOnly(directories []string, outputFn func(string)) (*
 				break
 			}
 		}
+		dirExtensions[absPath] = exts
 
 		hashes, err := HashDirectory(absPath, exts)
 		if err != nil {
@@ -299,23 +301,34 @@ func (i *Ingester) RunUpdateOnly(directories []string, outputFn func(string)) (*
 		outputFn(fmt.Sprintf("Ingesting %d file(s): %d added, %d changed (%d unchanged, %d removed)",
 			len(filesToIngest), added, changed, unchanged, removed))
 
-		opts := IngestOptions{
-			Extensions:     domain.SupportedFileExtensions,
-			CollectionName: i.config.CollectionName,
-		}
-
-		// Determine the unique parent directories of files to ingest.
-		dirSet := make(map[string]bool)
+		// Group changed files by their parent directory to use correct per-directory extensions.
+		dirFiles := make(map[string]bool)
 		for _, f := range filesToIngest {
-			dirSet[filepath.Dir(f)] = true
-		}
-		var dirs []string
-		for d := range dirSet {
-			dirs = append(dirs, d)
+			dirFiles[filepath.Dir(f)] = true
 		}
 
-		if err := i.Run(dirs, opts, outputFn); err != nil {
-			return nil, fmt.Errorf("running ingest: %w", err)
+		// Match each changed-file directory back to the top-level directory it belongs to,
+		// so we use the correct extensions for the ingest run.
+		for dir, exts := range dirExtensions {
+			// Check if any changed files are under this directory.
+			hasChanges := false
+			for changedDir := range dirFiles {
+				if changedDir == dir || strings.HasPrefix(changedDir, dir+string(filepath.Separator)) {
+					hasChanges = true
+					break
+				}
+			}
+			if !hasChanges {
+				continue
+			}
+
+			opts := IngestOptions{
+				Extensions:     exts,
+				CollectionName: i.config.CollectionName,
+			}
+			if err := i.Run([]string{dir}, opts, outputFn); err != nil {
+				return nil, fmt.Errorf("running ingest for %s: %w", dir, err)
+			}
 		}
 	} else {
 		outputFn("No changes detected, nothing to ingest.")

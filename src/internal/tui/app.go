@@ -249,7 +249,9 @@ func (m AppModel) runIngest(directories []string, extensions string) tea.Cmd {
 			}
 			m.config.AddOrUpdateDirectory(filepath.ToSlash(absPath), exts)
 		}
-		_ = domain.SaveConfig(m.config)
+		if saveErr := domain.SaveConfig(m.config); saveErr != nil {
+			return OperationDoneMsg{Output: fmt.Sprintf("Ingest complete, but could not save config: %v", saveErr)}
+		}
 
 		return OperationDoneMsg{}
 	}

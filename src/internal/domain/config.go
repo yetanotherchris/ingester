@@ -240,14 +240,8 @@ func (c *Config) AddOrUpdateDirectory(dir string, extensions []string) {
 // Validate checks the config and returns warnings for missing optional values
 // that fell back to defaults, and errors for invalid or missing required values.
 func (c *Config) Validate() (warnings []string, errs []error) {
-	if os.Getenv("COLLECTION_NAME") == "" {
-		warnings = append(warnings, "COLLECTION_NAME not set, using default: my-notes")
-	}
-	if os.Getenv("RCLONE_CONFIG_DIR") == "" {
-		warnings = append(warnings, "RCLONE_CONFIG_DIR not set, using default: "+defaultRcloneConfigDir())
-	}
-	if os.Getenv("ZOLAM_DATA_DIR") == "" {
-		warnings = append(warnings, "ZOLAM_DATA_DIR not set, using default: "+defaultDataDir())
+	if c.CollectionName == "my-notes" {
+		warnings = append(warnings, "collectionName not configured, using default: my-notes")
 	}
 
 	return warnings, errs
